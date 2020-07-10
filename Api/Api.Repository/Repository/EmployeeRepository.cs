@@ -1,5 +1,7 @@
 ﻿using Api.Common.Helper;
+using Api.Repository.Entities;
 using Api.Repository.IRepository;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -17,7 +19,8 @@ namespace Api.Repository.Repository
         }
         public async Task<JArray> RetrieveEmployeeList()
         {
-            return JArray.Parse(await _restApi.Get(""));
+            var response = await _restApi.Get("https://masglobaltestapi.azurewebsites.net/api/Employees");
+            return JArray.Parse(response);
         }
     }
 }
