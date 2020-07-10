@@ -4,10 +4,8 @@ using Api.Domain.IService;
 using Api.Repository.Entities;
 using Api.Repository.IRepository;
 using Newtonsoft.Json.Linq;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Api.Domain.Service
@@ -24,32 +22,39 @@ namespace Api.Domain.Service
 
         public async Task<DataTransferObject<Employee>> RetrieveEmployeeById(int id)
         {
-            var employees = await _employeeRepository.RetrieveEmployeeList();
-            var employee = employees.FirstOrDefault(x => x["id"].ToObject<int>() == id);
-            var contractTypeName = employee["contractTypeName"].ToString();
-            var concreteEmployee = _factory.GetEmployee(contractTypeName);
-            concreteEmployee.MonthlySalary = employee["monthlySalary"].ToObject<int>();
-            concreteEmployee.HourlySalary = employee["hourlySalary"].ToObject<int>();
-            concreteEmployee.ContractTypeName = contractTypeName;
-            return new DataTransferObject<Employee>() { Data = concreteEmployee };
+            JArray employees = await _employeeRepository.RetrieveEmployeeList();
+            JToken employee = employees.FirstOrDefault(x => x["id"].ToObject<int>() == id);
+            
+            return new DataTransferObject<Employee>() { Data = MapEmployee(employee) };
         }
 
         public async Task<DataTransferObject<List<Employee>>> RetrieveEmployeeList()
-        {            
-            var employees = await _employeeRepository.RetrieveEmployeeList();
-            var data = new List<Employee>();
+        {
+            JArray employees = await _employeeRepository.RetrieveEmployeeList();
+            List<Employee> data = new List<Employee>();
 
-            foreach (var employee in employees)
+            foreach (JToken employee in employees)
             {
-                var contractTypeName = employee["contractTypeName"].ToString();
-                var concreteEmployee = _factory.GetEmployee(contractTypeName);
-                concreteEmployee.MonthlySalary = employee["monthlySalary"].ToObject<int>();
-                concreteEmployee.HourlySalary = employee["hourlySalary"].ToObject<int>();
-                concreteEmployee.ContractTypeName = contractTypeName;
-                data.Add(concreteEmployee);
+                
+                data.Add(MapEmployee(employee));
             }
 
             return new DataTransferObject<List<Employee>>() { Data = data };
+        }
+
+        private Employee MapEmployee(JToken employee)
+        {
+            string contractTypeName = employee["contractTypeName"].ToString();
+            Employee concreteEmployee = _factory.GetEmployee(contractTypeName);
+            concreteEmployee.Id = employee["id"].ToObject<int>();
+            concreteEmployee.Name = employee["name"].ToString();
+            concreteEmployee.RoleName = employee["roleName"].ToString();
+            concreteEmployee.MonthlySalary = employee["monthlySalary"].ToObject<int>();
+            concreteEmployee.RoleId = employee["roleId"].ToObject<int>();
+            concreteEmployee.MonthlySalary = employee["monthlySalary"].ToObject<int>();
+            concreteEmployee.HourlySalary = employee["hourlySalary"].ToObject<int>();
+            concreteEmployee.ContractTypeName = contractTypeName;
+            return concreteEmployee;
         }
     }
 }
